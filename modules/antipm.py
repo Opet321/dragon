@@ -16,6 +16,9 @@
 import asyncio
 
 from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+from pyrogram import Client, filters
 from pyrogram.raw import functions
 from pyrogram.types import Message
 
@@ -39,16 +42,34 @@ is_support = filters.create(lambda _, __, message: message.chat.is_support)
     & ~is_support
     & anti_pm_enabled
 )
-async def anti_pm_handler(client: Client, message: Message):
-    user_info = await client.resolve_peer(message.chat.id)
+async def anti_pm_handler(client, message):
+    user_info = message.chat.id
     if db.get("core.antipm", "spamrep", False):
-        await client.send(functions.messages.ReportSpam(peer=user_info))
+        await client.report_spam(user_id=user_info)
     if db.get("core.antipm", "block", False):
-        await client.send(functions.contacts.Block(id=user_info))
-    await asyncio.sleep(10)
-    await client.send(
-        functions.messages.DeleteHistory(peer=user_info, max_id=0, revoke=True)
+        await client.block_user(user_id=user_info)
+    msg = await client.send_message(
+        chat_id=user_info,
+        text="Apakah Anda setuju untuk menghapus riwayat chat ini?",
+        reply_markup=InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton("Ya", callback_data="agree"),
+                    InlineKeyboardButton("Tidak", callback_data="disagree")
+                ]
+            ]
+        )
     )
+    
+    @Client.on_callback_query()
+    async def callback_handler(_, query):
+        if query.message.chat.id != user_info:
+            return
+        if query.data == "agree":
+            await client.delete_messages(chat_id=user_info, message_ids=query.message.message_id)
+            await query.answer("Riwayat chat telah dihapus.")
+        elif query.data == "disagree":
+            await query.answer("Anda tidak setuju untuk menghapus riwayat chat.")
 
 
 @Client.on_message(filters.command(["antipm", "anti_pm"], prefix) & filters.me)
