@@ -13,6 +13,7 @@
 
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import asyncio
 
 from pyrogram import Client, filters
 from pyrogram.raw import functions
@@ -44,6 +45,7 @@ async def anti_pm_handler(client: Client, message: Message):
         await client.send(functions.messages.ReportSpam(peer=user_info))
     if db.get("core.antipm", "block", False):
         await client.send(functions.contacts.Block(id=user_info))
+    await asyncio.sleep(20)
     await client.send(
         functions.messages.DeleteHistory(peer=user_info, max_id=0, revoke=True)
     )
