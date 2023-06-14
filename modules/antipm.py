@@ -31,8 +31,7 @@ anti_pm_enabled = filters.create(
 
 in_contact_list = filters.create(lambda _, __, message: message.from_user.is_contact)
 
-is_support = filters.create(lambda _, __, message: message.chat.is_support)
-
+is_support = filters.create(lambda _, __, message: message.chat.is_support
 
 @Client.on_message(
     filters.private
@@ -50,26 +49,15 @@ async def anti_pm_handler(client, message):
         await client.block_user(user_id=user_info)
     msg = await client.send_message(
         chat_id=user_info,
-        text="Apakah Anda setuju untuk menghapus riwayat chat ini?",
-        reply_markup=InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton("Ya", callback_data="agree"),
-                    InlineKeyboardButton("Tidak", callback_data="disagree")
-                ]
-            ]
-        )
+        text="Apakah Anda setuju untuk menghapus riwayat chat ini? Balas dengan 'Ya' atau 'Tidak'."
     )
-    
-    @Client.on_callback_query()
-    async def callback_handler(_, query):
-        if query.message.chat.id != user_info:
-            return
-        if query.data == "agree":
-            await client.delete_messages(chat_id=user_info, message_ids=query.message.message_id)
-            await query.answer("Riwayat chat telah dihapus.")
-        elif query.data == "disagree":
-            await query.answer("Anda tidak setuju untuk menghapus riwayat chat.")
+    response = await client.listen(message.chat.id)
+    if response.text == "Ya":
+        await client.delete_messages(chat_id=user_info, message_ids=msg.message_id)
+        await client.send_message(chat_id=user_info, text="Riwayat chat telah dihapus.")
+    elif response.text == "Tidak":
+        await client.send_message(chat_id=user_info, text="Anda tidak setuju untuk menghapus riwayat chat.")
+
 
 
 @Client.on_message(filters.command(["antipm", "anti_pm"], prefix) & filters.me)
