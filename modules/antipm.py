@@ -72,50 +72,9 @@ async def anti_pm(_, message: Message):
         await message.edit(f"<b>Usage: {prefix}antipm [enable|disable]</b>")
 
 
-@Client.on_message(filters.command(["antipm_report"], prefix) & filters.me)
-async def antipm_report(_, message: Message):
-    if len(message.command) == 1:
-        if db.get("core.antipm", "spamrep", False):
-            await message.edit(
-                "<b>Spam-reporting enabled.\n"
-                f"Disable with: </b><code>{prefix}antipm_report disable</code>"
-            )
-        else:
-            await message.edit(
-                "<b>Spam-reporting disabled.\n"
-                f"Enable with: </b><code>{prefix}antipm_report enable</code>"
-            )
-    elif message.command[1] in ["enable", "on", "1", "yes", "true"]:
-        db.set("core.antipm", "spamrep", True)
-        await message.edit("<b>Spam-reporting enabled!</b>")
-    elif message.command[1] in ["disable", "off", "0", "no", "false"]:
-        db.set("core.antipm", "spamrep", False)
-        await message.edit("<b>Spam-reporting disabled!</b>")
-    else:
-        await message.edit(f"<b>Usage: {prefix}antipm_report [enable|disable]</b>")
 
 
-@Client.on_message(filters.command(["antipm_block"], prefix) & filters.me)
-async def antipm_block(_, message: Message):
-    if len(message.command) == 1:
-        if db.get("core.antipm", "block", False):
-            await message.edit(
-                "<b>Blocking users enabled.\n"
-                f"Disable with: </b><code>{prefix}antipm_block disable</code>"
-            )
-        else:
-            await message.edit(
-                "<b>Blocking users disabled.\n"
-                f"Enable with: </b><code>{prefix}antipm_block enable</code>"
-            )
-    elif message.command[1] in ["enable", "on", "1", "yes", "true"]:
-        db.set("core.antipm", "block", True)
-        await message.edit("<b>Blocking users enabled!</b>")
-    elif message.command[1] in ["disable", "off", "0", "no", "false"]:
-        db.set("core.antipm", "block", False)
-        await message.edit("<b>Blocking users disabled!</b>")
-    else:
-        await message.edit(f"<b>Usage: {prefix}antipm_block [enable|disable]</b>")
+
 
 
 modules_help["antipm"] = {
