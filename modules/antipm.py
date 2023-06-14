@@ -59,7 +59,6 @@ async def anti_pm_handler(client, message):
         await client.send_message(chat_id=user_info, text="Anda tidak setuju untuk menghapus riwayat chat.")
 
 
-
 @Client.on_message(filters.command(["antipm", "anti_pm"], prefix) & filters.me)
 async def anti_pm(_, message: Message):
     if len(message.command) == 1:
