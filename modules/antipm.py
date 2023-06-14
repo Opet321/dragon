@@ -31,7 +31,7 @@ anti_pm_enabled = filters.create(
 
 in_contact_list = filters.create(lambda _, __, message: message.from_user.is_contact)
 
-is_support = filters.create(lambda _, __, message: message.chat.is_support
+is_support = filters.create(lambda _, __, message: message.chat.is_support)
 
 @Client.on_message(
     filters.private
