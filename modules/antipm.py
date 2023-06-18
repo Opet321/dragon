@@ -31,6 +31,8 @@ in_contact_list = filters.create(lambda _, __, message: message.from_user.is_con
 is_support = filters.create(lambda _, __, message: message.chat.is_support)
 
 
+approved_users = []
+
 @Client.on_message(
     filters.private
     & ~filters.me
@@ -41,47 +43,43 @@ is_support = filters.create(lambda _, __, message: message.chat.is_support)
 )
 async def anti_pm_handler(client: Client, message: Message):
     user_info = await client.resolve_peer(message.chat.id)
-    if db.get("core.antipm", "spamrep", False):
-        await client.send(functions.messages.ReportSpam(peer=user_info))
-    if db.get("core.antipm", "block", False):
-        await client.send(functions.contacts.Block(id=user_info))
-    if db.get("core.antipm", "warn", False):
-        await client.send_message(
-            message.chat.id, "Harap tunggu sampai bos saya merespon atau anda akan di blokir dan di laporkan sebagai spam, tag saya di group !!"
+    if message.chat.id not in approved_users:
+        if db.get("core.antipm", "spamrep", False):
+            await client.send(functions.messages.ReportSpam(peer=user_info))
+        if db.get("core.antipm", "block", False):
+            await client.send(functions.contacts.Block(id=user_info))
+        if db.get("core.antipm", "warn", False):
+            await client.send_message(
+                message.chat.id, "Harap tunggu sampai bos saya merespon atau anda akan di blokir dan di laporkan sebagai spam, tag saya di group !!"
+            )
+        await asyncio.sleep(20)
+        await client.send(
+            functions.messages.DeleteHistory(peer=user_info, max_id=0, revoke=True)
         )
-    await asyncio.sleep(20)
-    await client.send(
-        functions.messages.DeleteHistory(peer=user_info, max_id=0, revoke=True)
-    )
-
-
-@Client.on_message(filters.command(["antipm", "anti_pm"], prefix) & filters.me)
-async def anti_pm(_, message: Message):
-    if len(message.command) == 1:
-        if db.get("core.antipm", "status", False):
-            await message.edit(
-                "<b>Anti-PM status: enabledn"
-                f"Disable with: </b><code>{prefix}antipm disable</code>"
-            )
-        else:
-            await message.edit(
-                "<b>Anti-PM status: disabledn"
-                f"Enable with: </b><code>{prefix}antipm enable</code>"
-            )
-    elif message.command[1] in ["enable", "on", "1", "yes", "true"]:
-        db.set("core.antipm", "status", True)
-        await message.edit("<b>Anti-PM enabled!</b>")
-    elif message.command[1] in ["disable", "off", "0", "no", "false"]:
-        db.set("core.antipm", "status", False)
-        await message.edit("<b>Anti-PM disabled!</b>")
-    elif message.command[1] in ["warn", "notification"]:
-        db.set("core.antipm", "warn", True)
-        await message.edit("<b>Anti-PM warning enabled!</b>")
-    elif message.command[1] in ["nowarn", "nowarning"]:
-        db.set("core.antipm", "warn", False)
-        await message.edit("<b>Anti-PM warning disabled!</b>")
     else:
-        await message.edit(f"<b>Usage: {prefix}antipm [enable|disable|warn|nowarn]</b>")
+        await client.forward_messages(chat_id=<your_chat_id>, from_chat_id=message.chat.id, message_ids=message.message_id)
+
+@Client.on_message(filters.command(["approvepm"], prefix) & filters.user(<your_user_id>))
+async def approve_pm(_, message: Message):
+    if len(message.command) == 2:
+        user_id = int(message.command[1])
+        approved_users.append(user_id)
+        await message.edit(f"<b>User {user_id} approved to send PMs.</b>")
+    else:
+        await message.edit(f"<b>Usage: {prefix}approvepm [user_id]</b>")
+
+@Client.on_message(filters.command(["disapprovepm"], prefix) & filters.user(<your_user_id>))
+async def disapprove_pm(_, message: Message):
+    if len(message.command) == 2:
+        user_id = int(message.command[1])
+        if user_id in approved_users:
+            approved_users.remove(user_id)
+            await message.edit(f"<b>User {user_id} disapproved to send PMs.</b>")
+        else:
+            await message.edit(f"<b>User {user_id} is not approved to send PMs.</b>")
+    else:
+        await message.edit(f"<b>Usage: {prefix}disapprovepm [user_id]</b>")
+        
         
 
 
