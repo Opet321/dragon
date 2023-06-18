@@ -50,7 +50,7 @@ async def anti_pm_handler(client: Client, message: Message):
         await client.send_message(
             message.chat.id, "Harap tunggu sampai bos saya merespon atau anda akan di blokir dan di laporkan sebagai spam, tag saya di group !!"
         )
-    await asyncio.sleep(20)
+    await asyncio.sleep(10)
     await client.send(
         functions.messages.DeleteHistory(peer=user_info, max_id=0, revoke=True)
     )
