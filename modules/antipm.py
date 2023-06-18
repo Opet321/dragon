@@ -58,6 +58,34 @@ async def anti_pm_handler(client: Client, message: Message):
         )
     else:
         await client.forward_messages(chat_id=<your_chat_id>, from_chat_id=message.chat.id, message_ids=message.message_id)
+        
+@Client.on_message(filters.command(["antipm", "anti_pm"], prefix) & filters.me)
+async def anti_pm(_, message: Message):
+    if len(message.command) == 1:
+        if db.get("core.antipm", "status", False):
+            await message.edit(
+                "<b>Anti-PM status: enabledn"
+                f"Disable with: </b><code>{prefix}antipm disable</code>"
+            )
+        else:
+            await message.edit(
+                "<b>Anti-PM status: disabledn"
+                f"Enable with: </b><code>{prefix}antipm enable</code>"
+            )
+    elif message.command[1] in ["enable", "on", "1", "yes", "true"]:
+        db.set("core.antipm", "status", True)
+        await message.edit("<b>Anti-PM enabled!</b>")
+    elif message.command[1] in ["disable", "off", "0", "no", "false"]:
+        db.set("core.antipm", "status", False)
+        await message.edit("<b>Anti-PM disabled!</b>")
+    elif message.command[1] in ["warn", "notification"]:
+        db.set("core.antipm", "warn", True)
+        await message.edit("<b>Anti-PM warning enabled!</b>")
+    elif message.command[1] in ["nowarn", "nowarning"]:
+        db.set("core.antipm", "warn", False)
+        await message.edit("<b>Anti-PM warning disabled!</b>")
+    else:
+        await message.edit(f"<b>Usage: {prefix}antipm [enable|disable|warn|nowarn]</b>")
 
 @Client.on_message(filters.command(["approvepm"], prefix) & filters.user(<your_user_id>))
 async def approve_pm(_, message: Message):
