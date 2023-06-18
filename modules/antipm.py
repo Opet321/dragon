@@ -47,9 +47,9 @@ async def anti_pm_handler(client: Client, message: Message):
         await client.send(functions.contacts.Block(id=user_info))
     if db.get("core.antipm", "warn", False):
         await client.send_message(
-            message.chat.id, "Pesan Anda tidak dapat diterima karena fitur Anti-PM diaktifkan."
+            message.chat.id, "Harap tunggu sampai bos saya merespon atau anda akan di blokir dan di laporkan sebagai spam, tag saya di group !!"
         )
-    await asyncio.sleep(6)
+    await asyncio.sleep(20)
     await client.send(
         functions.messages.DeleteHistory(peer=user_info, max_id=0, revoke=True)
     )
