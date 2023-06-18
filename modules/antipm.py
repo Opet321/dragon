@@ -45,7 +45,11 @@ async def anti_pm_handler(client: Client, message: Message):
         await client.send(functions.messages.ReportSpam(peer=user_info))
     if db.get("core.antipm", "block", False):
         await client.send(functions.contacts.Block(id=user_info))
-    await asyncio.sleep(20)
+    if db.get("core.antipm", "warn", False):
+        await client.send_message(
+            message.chat.id, "Pesan Anda tidak dapat diterima karena fitur Anti-PM diaktifkan."
+        )
+    await asyncio.sleep(6)
     await client.send(
         functions.messages.DeleteHistory(peer=user_info, max_id=0, revoke=True)
     )
@@ -56,12 +60,12 @@ async def anti_pm(_, message: Message):
     if len(message.command) == 1:
         if db.get("core.antipm", "status", False):
             await message.edit(
-                "<b>Anti-PM status: enabled\n"
+                "<b>Anti-PM status: enabledn"
                 f"Disable with: </b><code>{prefix}antipm disable</code>"
             )
         else:
             await message.edit(
-                "<b>Anti-PM status: disabled\n"
+                "<b>Anti-PM status: disabledn"
                 f"Enable with: </b><code>{prefix}antipm enable</code>"
             )
     elif message.command[1] in ["enable", "on", "1", "yes", "true"]:
@@ -70,8 +74,15 @@ async def anti_pm(_, message: Message):
     elif message.command[1] in ["disable", "off", "0", "no", "false"]:
         db.set("core.antipm", "status", False)
         await message.edit("<b>Anti-PM disabled!</b>")
+    elif message.command[1] in ["warn", "notification"]:
+        db.set("core.antipm", "warn", True)
+        await message.edit("<b>Anti-PM warning enabled!</b>")
+    elif message.command[1] in ["nowarn", "nowarning"]:
+        db.set("core.antipm", "warn", False)
+        await message.edit("<b>Anti-PM warning disabled!</b>")
     else:
-        await message.edit(f"<b>Usage: {prefix}antipm [enable|disable]</b>")
+        await message.edit(f"<b>Usage: {prefix}antipm [enable|disable|warn|nowarn]</b>")
+        
 
 
 
